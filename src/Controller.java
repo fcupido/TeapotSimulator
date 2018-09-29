@@ -1,79 +1,66 @@
 import java.util.Scanner;
 
-/**
- * Class that controls what the model is doing and ensures that the view keeps rendering.
- * @author Felipe Cupido
- */
-
-
+import static java.lang.Thread.sleep;
 
 public class Controller implements Runnable{
-    private String [] oldVals;
-    private String [] newVals;
-    private MyFileReader fileReader;
+    private static final String filepath = "C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\textfile.txt";
+    private Model model;
+    private View view;
     private boolean notQuit;
-    public Controller (String filePath) throws Exception{
+    private final int waitTimeMillis = 1000;
+
+    private Controller()throws Exception{
+        view = new View();
+        model = new Model(filepath);
         notQuit = true;
-        fileReader = new MyFileReader(filePath);
-        oldVals = fileReader.getFileContents();
-        for (String line: oldVals) {
-            System.out.println(line);
-        }
-        //view = new view();
-        //view.loadContents(oldVals);
-        //view.run();
-    }
-
-    private boolean fileChanged (){
-        for(String oldValsa: oldVals)
-        System.out.println("Old Vals: " + oldValsa);
-        for(String newValsb: newVals)
-        System.out.println("New Vals: " + newValsb);
-        if(oldVals.length != newVals.length){
-            return true;
-        } else {
-            for (int i = 0; i < oldVals.length; i++){
-                if((oldVals[i].compareTo(newVals[i])) != 0){
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public void quit (){
-        notQuit = false;
     }
 
     public static void main (String [] args) throws Exception{
-
         System.out.println("Starting program");
+        Controller controller = new Controller();
+        Thread controllerThread = new Thread(controller);
+        Thread viewTread = new Thread(controller.view);
+        viewTread.start();
+        //controllerThread.start();
+
+
+
+        System.out.println("Press enter to terminate.");
         Scanner scanner = new Scanner(System.in);
-        Controller controller = new Controller("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\textfile.txt");
-        controller.run();
         scanner.nextLine();
-        controller.quit();
+        controller.quit(); //Starts shutdowns process
+        controllerThread.join();
         System.out.println("Program Ended");
     }
 
-
-    @Override
     public void run(){
-        try {
-            while (notQuit) {
-                newVals = fileReader.getFileContents();
-                if(fileChanged()){
-                    //view.load(newVals);
-                    System.out.println("File Has Changed");
-                } else {
-                    System.out.println("No change detected");
+        while (notQuit){
+            try {
+                if (model.checkForFileChange()) {
+                    loadToView();
+                    //Comment out when done
+                    System.out.println("Change Detected. New File Contents");
+                    for (String s:model.getNewValues()) {
+                        System.out.println(s);
+                    }
+                    System.out.println();
                 }
-                oldVals = newVals;
-                System.out.println(" ");
-                Thread.sleep(500);
+                sleep(waitTimeMillis);
+            } catch (Exception e){
+                System.out.println("Exception at controller.run");
+                e.printStackTrace();
+                System.exit(1);
             }
-        } catch (Exception e){
-            System.err.println("Exception at controller.run()");
+
         }
     }
+
+    void loadToView(){
+
+    }
+
+    void quit (){
+        notQuit = false;
+    }
+
 }
