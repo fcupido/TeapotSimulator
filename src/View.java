@@ -26,7 +26,7 @@ public class View implements Runnable {
                 info.indexOf("mWL") - 2,10);
 
         teaPot.setCapacity(capacity);
-        teaPot.setCoffe_pot_inserted(coffeePotInserted);
+        teaPot.setCoffee_pot_inserted(coffeePotInserted);
         teaPot.setHeater_enabled(heater_enabled);
         teaPot.setLed1_on(led1);
         teaPot.setLed2_on(led2);
@@ -67,7 +67,7 @@ public class View implements Runnable {
 
         TeaPot temp = new TeaPot();
         temp.setCapacity(capacity);
-        temp.setCoffe_pot_inserted(coffeePotInserted);
+        temp.setCoffee_pot_inserted(coffeePotInserted);
         temp.setHeater_enabled(heater_enabled);
         temp.setLed1_on(led1);
         temp.setLed2_on(led2);
