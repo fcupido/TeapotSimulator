@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 /**
  * Class that controls what the model is doing and ensures that the view keeps rendering.
  * @author Felipe Cupido
@@ -13,8 +11,11 @@ public class Model{
     private MyFileReader fileReader;
     private boolean notQuit;
 
-    String[] getNewValues() {
+    String [] getNewValues() {
         return newValues;
+    }
+    String [] getOldValues() {
+        return oldValues;
     }
 
     Model(String filePath) throws Exception{
@@ -23,7 +24,7 @@ public class Model{
         oldValues = fileReader.getFileContents();
     }
 
-    private boolean diffOldNew(){
+    private boolean isNewDifferentFromOld(){
         if(oldValues.length != newValues.length){
             return true;
         } else {
@@ -38,7 +39,7 @@ public class Model{
 
     boolean checkForFileChange ()throws Exception{
         newValues = fileReader.getFileContents();
-        boolean returnValue = diffOldNew();
+        boolean returnValue = isNewDifferentFromOld();
         oldValues = newValues;
         return returnValue;
     }
