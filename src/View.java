@@ -1,14 +1,32 @@
 import javax.swing.*;
+import java.awt.*;
 
 public class View implements Runnable {
-    TeaPot teaPot;
-
+    TeaPot [] teaPots;
+    int teaPotCount;
     //TODO Add starting values (needed to decide starting size, instantiate teapots)
     View(String [] info) {
-        teaPot = new TeaPot(extractTeaPot(info[0]));
+        teaPots = new TeaPot[4];
+        teaPotCount = getTeaPotCount(info);
+        for(int i =0; i<teaPotCount; i++) {
+            teaPots[i] = new TeaPot(extractTeaPot(info[i])); //Starting all the teapot threads
+        }
+    }
+    int getTeaPotCount(String [] info){
+        int expected = Integer.parseInt(info[0].substring(7,8));
+        if(info.length < expected){
+            return info.length;
+        } else {
+            return expected;
+        }
     }
     void update(String [] strings){
-        String info = strings[0];
+        for(int i =0; i<teaPotCount; i++) {
+            stringToTeaPot(strings[i], teaPots[i]);
+        }
+    }
+
+    private void stringToTeaPot(String info, TeaPot teaPot) {
         int register = getFirstHex(info);
         boolean power_on = (register & 0x0001) != 0; //if not equal 0, then it's true
         boolean leds_enabled = (register & 0x0002) != 0;//bit 1
@@ -41,14 +59,20 @@ public class View implements Runnable {
     }
 
     public void run(){
-        JFrame frame = new JFrame("Bouncing Ball");
+        JFrame frame = new JFrame("Teapots");
+        frame.setLayout(new GridLayout(2,2));
+
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setSize(300,300);
-        frame.setContentPane(teaPot);
+        frame.setSize(600,600);
+        for(int i =0; i < teaPotCount; i++){
+            frame.add(teaPots[i]);
+        }
+        //frame.setContentPane(teaPots[0]);
         frame.setVisible(true);
     }
 
     TeaPot extractTeaPot(String info){
+        //TODO: add support for 1 and 2 digit TW, CT, mWL
         int register = getFirstHex(info);
         boolean power_on = (register & 0x0001) != 0; //if not equal 0, then it's true
         boolean leds_enabled = (register & 0x0002) != 0;//bit 1

@@ -53,10 +53,16 @@ public class TeaPot extends JPanel{
     }
 
     TeaPot(TeaPot o){
-        this(o.power_on,o.leds_enabled,o.water_enabled,o.heater_enabled,o.coffee_pot_inserted,o.led1_on,o.led2_on,o.led3_on,o.led4_on,o.capacity,o.waterVolume,o.temperature);
+        this(o.power_on,o.leds_enabled,o.water_enabled,
+                o.heater_enabled,o.coffee_pot_inserted,
+                o.led1_on,o.led2_on,o.led3_on,o.led4_on,
+                o.capacity,o.waterVolume,o.temperature);
     }
 
-    public TeaPot (){}
+
+    public TeaPot (){
+        //This empty default constructor is required by view, do NOT start a thread here.
+    }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
