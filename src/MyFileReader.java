@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class MyFileReader {
-    MyFileReader(String file_path) throws Exception { //Change exception to the actual exeptions
+    MyFileReader(String file_path){
         fileName = file_path;
     }
     private String fileName;
@@ -18,7 +18,7 @@ public class MyFileReader {
         reader = new BufferedReader(new FileReader(fileName));
         reader.mark(1000);
     }
-    private int getLineCount() throws Exception{
+    private int getLineCount() throws IOException{
         reader.reset();
         int count = 0;
         while (reader.readLine() != null) {
@@ -27,8 +27,7 @@ public class MyFileReader {
         return count;
     }
 
-    String [] getFileContents()throws Exception {
-        //reopen();
+    String [] getFileContents()throws IOException {
         reader = new BufferedReader(new FileReader(fileName));
         reader.mark(1000);
         String[] fileContents = new String[getLineCount()];
@@ -42,10 +41,6 @@ public class MyFileReader {
     }
 
     public static void main(String [] args) throws Exception {
-//        System.out.println( System.getProperty("user.dir"));
-//        Scanner scanner = new Scanner (System.in);
-//        String filename =scanner.nextLine();
-//        BufferedReader reader = new BufferedReader(new java.io.FileReader("C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote.txt"));
         String line;
         BufferedReader reader = new BufferedReader(new java.io.FileReader("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\textfile.txt"));
         reader.mark(1000);

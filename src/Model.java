@@ -1,15 +1,16 @@
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 /**
  * Class that controls what the model is doing and ensures that the view keeps rendering.
  * @author Felipe Cupido
  */
 
 
-
-public class Model{
+class Model{
     private String [] oldValues;
     private String [] newValues;
     private MyFileReader fileReader;
-    private boolean notQuit;
 
     String [] getNewValues() {
         return newValues;
@@ -18,10 +19,27 @@ public class Model{
         return oldValues;
     }
 
-    Model(String filePath) throws Exception{
-        notQuit = true;
-        fileReader = new MyFileReader(filePath);
-        oldValues = fileReader.getFileContents();
+    Model(String filePath){
+        int maxTries = 10;
+        for (int i = 0; i <= 10; i++) {
+            try {
+                fileReader = new MyFileReader(filePath);
+                oldValues = fileReader.getFileContents();
+                break;
+            } catch (FileNotFoundException ex) {
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException ignored){}
+                if(i == maxTries){
+                    System.err.println("No file found at: " + filePath);
+                    System.err.println("Tried: (" + maxTries+") times." );
+                    System.exit(1);
+                }
+            } catch (IOException ex2) {
+                ex2.printStackTrace();
+                System.exit(1);
+            }
+        }
     }
 
     private boolean isNewDifferentFromOld(){
@@ -37,7 +55,7 @@ public class Model{
         return false;
     }
 
-    boolean checkForFileChange ()throws Exception{
+    boolean checkForFileChange ()throws IOException{
         newValues = fileReader.getFileContents();
         boolean returnValue = isNewDifferentFromOld();
         oldValues = newValues;
