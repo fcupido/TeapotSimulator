@@ -48,8 +48,8 @@ public class Controller implements Runnable{
                 args = new String[]{"C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote_SCADAtransmission.info"};
             } else {
                 System.err.println("Error: Not enough arguments. Usage:");
-                System.err.println("java controller.java <file path>");
-                System.err.println("Example: java Controller \"C:\\Users\\your_user\\Documents\\School\\ENCM 511\\textfile.txt\"");
+                System.err.println("java -jar Animation.jar <file path>");
+                System.err.println("Example: java -jar Animation.jar \"C:\\Users\\your_user\\Documents\\School\\ENCM 511\\textfile.txt\"");
                 System.err.println("You could also place the file at C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote_SCADAtransmission.info");
 
                 System.exit(1);

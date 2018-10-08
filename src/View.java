@@ -21,13 +21,15 @@ public class View implements Runnable {
         }
     }
     void update(String [] strings){
-        for(int i =0; i<teaPotCount; i++) {
-            stringToTeaPot(strings[i], teaPots[i]);
-        }
+        try {
+            for (int i = 0; i < teaPotCount; i++) {
+                stringToTeaPot(strings[i], teaPots[i]);
+            }
+        } catch (ArrayIndexOutOfBoundsException ignored){}
     }
 
     private void stringToTeaPot(String info, TeaPot teaPot) {
-        int register = getFirstHex(info);
+        int register = getNumberAfter(info,"0x",16);
         boolean power_on = (register & 0x0001) != 0; //if not equal 0, then it's true
         boolean leds_enabled = (register & 0x0002) != 0;//bit 1
         boolean water_enabled = (register & 0x0004) !=0;//bit 2
@@ -39,10 +41,15 @@ public class View implements Runnable {
         boolean led3 = (register & 0x4000) != 0;//bit 12
         boolean led4 = (register & 0x8000) != 0;//bit 12
 
-        int capacity = getNumberAfter(info,"mWL ");
-        int currentTemperature = getNumberAfter(info, "CT ");
-        int waterVolume = getNumberAfter(info,"WL ");
+        int capacity = getNumberAfter(info,"mWL ",10);
+        int currentTemperature = getNumberAfter(info, "CT ",10);
+        int waterVolume = getNumberAfter(info,"WL ",10);
+        int HR = getNumberAfter(info,"HR ",10);
+        int HRB = getNumberAfter(info,"HRB ", 10);
+        int frameRate = getNumberAfter(info,"CN ",10);
 
+        teaPot.setHR(HR);
+        teaPot.setHRB(HRB);
         teaPot.setCapacity(capacity);
         teaPot.setCoffee_pot_inserted(coffeePotInserted);
         teaPot.setHeater_enabled(heater_enabled);
@@ -56,6 +63,13 @@ public class View implements Runnable {
         teaPot.setWater_enabled(water_enabled);
         teaPot.setTemperature(currentTemperature);
         teaPot.setWaterVolume(waterVolume);
+        teaPot.setFrameRate(frameRate);
+    }
+
+    private TeaPot extractTeaPot(String info){
+        TeaPot temp = new TeaPot();
+        stringToTeaPot(info, temp);
+        return temp;
     }
 
     public void run(){
@@ -80,52 +94,18 @@ public class View implements Runnable {
         for(int i =0; i < teaPotCount; i++){
             frame.add(teaPots[i]);
         }
-        //frame.setContentPane(teaPots[0]);
+        frame.setResizable(false);
         frame.setVisible(true);
     }
 
-    private TeaPot extractTeaPot(String info){
-        //TODO: add support for 1 and 2 digit TW, CT, mWL
-        int register = getFirstHex(info);
-        boolean power_on = (register & 0x0001) != 0; //if not equal 0, then it's true
-        boolean leds_enabled = (register & 0x0002) != 0;//bit 1
-        boolean water_enabled = (register & 0x0004) !=0;//bit 2
-        boolean heater_enabled = (register &0x0008) != 0;//bit 3
-        boolean coffeePotInserted = (register & 0x0800) != 0;// bit 11
-        boolean led1 = (register & 0x1000) != 0;//bit 12
-        boolean led2 = (register & 0x2000) != 0;//bit 12
-        boolean led3 = (register & 0x4000) != 0;//bit 12
-        boolean led4 = (register & 0x8000) != 0;//bit 12
-
-        int capacity = getNumberAfter(info,"mWL ");
-        int currentTemperature = getNumberAfter(info, "CT ");
-        int waterVolume = getNumberAfter(info,"WL ");
-
-        TeaPot temp = new TeaPot();
-        temp.setCapacity(capacity);
-        temp.setCoffee_pot_inserted(coffeePotInserted);
-        temp.setHeater_enabled(heater_enabled);
-        temp.setLed1_on(led1);
-        temp.setLed2_on(led2);
-        temp.setLed3_on(led3);
-        temp.setLed4_on(led4);
-        temp.setPower_on(power_on);
-        temp.setSystem_enabled(leds_enabled);
-        temp.setWater_enabled(water_enabled);
-        temp.setTemperature(currentTemperature);
-        temp.setWaterVolume(waterVolume);
-
-        return temp;
-    }
-
-    private static int getNumberAfter(String string, String substring){
+    private static int getNumberAfter(String string, String substring, int radix){
         int sequenceIndex = string.indexOf(substring);
         sequenceIndex += substring.length();
         int sequenceEnd = string.indexOf(',',sequenceIndex);
         if(sequenceEnd == -1){
             sequenceEnd = string.length();
         }
-        return Integer.parseInt(string,sequenceIndex,sequenceEnd,10);
+        return Integer.parseInt(string, sequenceIndex, sequenceEnd, radix);
     }
 
     public static void main (String [] args){
@@ -134,10 +114,10 @@ public class View implements Runnable {
                 "P 2, T 4, CR 0xC01F, TW 100,  HR 10, HRB 10, CT 60,  mWL 200, CN 2",
                 "P 3, T 4, CR 0x3F1F, TW 140,  HR 10, HRB 10, CT 200, mWL 200, CN 2",
                 "P 4, T 4, CR 0x9F1F, TW 500,  HR 10, HRB 10, CT 700, mWL 200, CN 2"};
-        System.out.println(getNumberAfter(info[1],"CN "));
+        System.out.println(getNumberAfter(info[1],"CN ",10));
     }
 
-    private int getFirstHex(String info){
-        return Integer.parseUnsignedInt(info,info.indexOf("0x")+2,(info.indexOf("0x")+ 6),16);
-    }
+//    private int getFirstHex(String info){
+//        return Integer.parseUnsignedInt(info,info.indexOf("0x")+2,(info.indexOf("0x")+ 6),16);
+//    }
 }
