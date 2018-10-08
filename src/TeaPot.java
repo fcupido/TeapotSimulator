@@ -1,5 +1,17 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ImageConsumer;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
 
 public class TeaPot extends JPanel implements Runnable{
 
@@ -24,16 +36,8 @@ public class TeaPot extends JPanel implements Runnable{
     private int frameRate;
 
     private boolean notQuit;
-    private boolean onFire;
+    private boolean destroyed;
 
-
-    public boolean isNotQuit() {
-        return notQuit;
-    }
-
-    public void setNotQuit(boolean notQuit) {
-        this.notQuit = notQuit;
-    }
 
     private TeaPot(boolean power_on, boolean system_enabled, boolean water_enabled,
                    boolean heater_enabled, boolean device_ready, boolean coffee_pot_inserted,
@@ -58,6 +62,10 @@ public class TeaPot extends JPanel implements Runnable{
         this.temperature = temperature;
         this.frameRate = frameRate;
         notQuit = true;
+        destroyed = temperature > 250;
+        setLayout(new BorderLayout());
+        add(Box.createVerticalStrut(85),BorderLayout.PAGE_END);
+        add(Box.createHorizontalStrut(12),BorderLayout.LINE_END);
     }
     public void run(){
         while (notQuit) {
@@ -78,11 +86,12 @@ public class TeaPot extends JPanel implements Runnable{
                 o.HR,o.HRB,
                 o.led1_on,o.led2_on,o.led3_on,o.led4_on,
                 o.capacity,o.waterVolume,o.temperature, o.frameRate);
+        destroyed = o.destroyed;
     }
 
 
     TeaPot(){
-        //This empty default constructor is required by view, do NOT start a thread here.
+
     }
 
     public void paintComponent(Graphics g) {
@@ -137,6 +146,10 @@ public class TeaPot extends JPanel implements Runnable{
 
         //bubbles
         drawBubbles(g);
+    }
+
+    public int getTemperature() {
+        return temperature;
     }
 
     private void showFrameRate(Graphics g){
@@ -304,6 +317,21 @@ public class TeaPot extends JPanel implements Runnable{
 
     void setTemperature(int temperature) {
         this.temperature = temperature;
+    }
+    public boolean isNotQuit() {
+        return notQuit;
+    }
+
+    public void setNotQuit(boolean notQuit) {
+        this.notQuit = notQuit;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
+    }
+
+    public void setDestroyed(boolean destroyed) {
+        this.destroyed = destroyed;
     }
 }
 

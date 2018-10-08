@@ -1,20 +1,33 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Files;
 
 public class View implements Runnable {
     private TeaPot [] teaPots;
     private int teaPotCount;
     private JFrame frame;
     private JPanel panel;
+    private JLabel fireIcon;
+    private boolean [] isDestroyed;
 
     //TODO Add starting values (needed to decide starting size, instantiate teapots)
     View(String [] info) {
         teaPots = new TeaPot[4];
+        isDestroyed = new boolean[4];
         teaPotCount = getTeaPotCount(info);
         for(int i =0; i<teaPotCount; i++) {
             teaPots[i] = new TeaPot(extractTeaPot(info[i])); //Starting all the teapot threads
             Thread t = new Thread(teaPots[i]);
             t.start();
+            if(teaPots[i].isDestroyed()){
+                isDestroyed[i] = true;
+                addFire(teaPots[i]);
+                System.out.println("created view and added fire");
+            }
         }
         frame = new JFrame("Teapots");
         panel = new JPanel();
@@ -31,9 +44,14 @@ public class View implements Runnable {
     }
     void update(String [] strings){
         int newTeapotCount = getTeaPotCount(strings);
-        if(newTeapotCount == teaPotCount){
+        if(newTeapotCount == teaPotCount){ //No need to change the panels
             for(int i = 0; i < teaPotCount; i++) {
                 stringToTeaPot(strings[i], teaPots[i]);
+                if(teaPots[i].getTemperature() > 250){
+                    isDestroyed[i] = true;
+                    addFire(teaPots[i]);
+                    makeContentPane();
+                }
             }
         } else if (newTeapotCount >= 1 && newTeapotCount <= 4){
             for(int i = 0; i < teaPotCount; i++){
@@ -42,11 +60,23 @@ public class View implements Runnable {
             teaPotCount = newTeapotCount;
             for(int i =0; i<teaPotCount; i++) {
                 teaPots[i] = new TeaPot(extractTeaPot(strings[i])); //Starting all the teapot threads
+                if(teaPots[i].isDestroyed()) isDestroyed[i] = true;
+                if(isDestroyed[i]) addFire(teaPots[i]);
                 Thread t = new Thread(teaPots[i]);
                 t.start();
             }
             makeContentPane();
         }
+    }
+    private void addFire(TeaPot teaPot){
+        File gif = new File("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\src\\145.gif");
+        byte[] mage = new byte[0];
+        try {
+            mage = Files.readAllBytes(gif.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        teaPot.add(new JLabel(new ImageIcon(mage)));
     }
 
     private void stringToTeaPot(String info, TeaPot teaPot) {
@@ -85,6 +115,7 @@ public class View implements Runnable {
         teaPot.setTemperature(currentTemperature);
         teaPot.setWaterVolume(waterVolume);
         teaPot.setFrameRate(frameRate);
+        if(currentTemperature > 250) teaPot.setDestroyed(true);
     }
 
     private TeaPot extractTeaPot(String info){
@@ -141,16 +172,18 @@ public class View implements Runnable {
         return Integer.parseInt(string, sequenceIndex, sequenceEnd, radix);
     }
 
-    public static void main (String [] args){
-        String [] info = new String[] {
-                "P 1, T 4, CR 0x1F0f, TW 200,  HR 10, HRB 10, CT 700, mWL 200, CN 2",
-                "P 2, T 4, CR 0xC01F, TW 100,  HR 10, HRB 10, CT 60,  mWL 200, CN 2",
-                "P 3, T 4, CR 0x3F1F, TW 140,  HR 10, HRB 10, CT 200, mWL 200, CN 2",
-                "P 4, T 4, CR 0x9F1F, TW 500,  HR 10, HRB 10, CT 700, mWL 200, CN 2"};
-        System.out.println(getNumberAfter(info[1],"CN ",10));
-    }
+    public static void main(String[] args) throws IOException {
 
-//    private int getFirstHex(String info){
-//        return Integer.parseUnsignedInt(info,info.indexOf("0x")+2,(info.indexOf("0x")+ 6),16);
-//    }
+        File gif = new File("C:\\Users\\Felipe\\OneDrive\\Desktop\\ODku.gif");
+        byte [] mage = Files.readAllBytes(gif.toPath());
+        JLabel label = new JLabel(new ImageIcon(mage));
+
+        JFrame f = new JFrame("Animation");
+        f.getContentPane().add(label);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.pack();
+        f.setSize(300,300);
+        f.setLocationRelativeTo(null);
+        f.setVisible(true);
+    }
 }
