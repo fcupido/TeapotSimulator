@@ -4,28 +4,49 @@ import java.awt.*;
 public class View implements Runnable {
     private TeaPot [] teaPots;
     private int teaPotCount;
+    private JFrame frame;
+    private JPanel panel;
+
     //TODO Add starting values (needed to decide starting size, instantiate teapots)
     View(String [] info) {
         teaPots = new TeaPot[4];
         teaPotCount = getTeaPotCount(info);
         for(int i =0; i<teaPotCount; i++) {
             teaPots[i] = new TeaPot(extractTeaPot(info[i])); //Starting all the teapot threads
+            Thread t = new Thread(teaPots[i]);
+            t.start();
         }
+        frame = new JFrame("Teapots");
+        panel = new JPanel();
+        frame.setContentPane(panel);
     }
     private int getTeaPotCount(String[] info){
-        int expected = Integer.parseInt(info[0].substring(7,8));
-        if(info.length < expected){
-            return info.length;
-        } else {
-            return expected;
+        int count = Integer.parseInt(info[0].substring(7,8));
+        if(info.length < count){
+            count = info.length;
         }
+        if(count > 4) count = 4;
+        if(count < 0) count = 0;
+        return count;
     }
     void update(String [] strings){
-        try {
-            for (int i = 0; i < teaPotCount; i++) {
+        int newTeapotCount = getTeaPotCount(strings);
+        if(newTeapotCount == teaPotCount){
+            for(int i = 0; i < teaPotCount; i++) {
                 stringToTeaPot(strings[i], teaPots[i]);
             }
-        } catch (ArrayIndexOutOfBoundsException ignored){}
+        } else if (newTeapotCount >= 1 && newTeapotCount <= 4){
+            for(int i = 0; i < teaPotCount; i++){
+                teaPots[i].setNotQuit(false);
+            }
+            teaPotCount = newTeapotCount;
+            for(int i =0; i<teaPotCount; i++) {
+                teaPots[i] = new TeaPot(extractTeaPot(strings[i])); //Starting all the teapot threads
+                Thread t = new Thread(teaPots[i]);
+                t.start();
+            }
+            makeContentPane();
+        }
     }
 
     private void stringToTeaPot(String info, TeaPot teaPot) {
@@ -43,7 +64,7 @@ public class View implements Runnable {
 
         int capacity = getNumberAfter(info,"mWL ",10);
         int currentTemperature = getNumberAfter(info, "CT ",10);
-        int waterVolume = getNumberAfter(info,"WL ",10);
+        int waterVolume = getNumberAfter(info,"TW ",10);
         int HR = getNumberAfter(info,"HR ",10);
         int HRB = getNumberAfter(info,"HRB ", 10);
         int frameRate = getNumberAfter(info,"CN ",10);
@@ -73,29 +94,41 @@ public class View implements Runnable {
     }
 
     public void run(){
-        JFrame frame = new JFrame("Teapots");
+        //frame = new JFrame("Teapots");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        makeContentPane();
+        frame.setResizable(false);
+        frame.setVisible(true);
+    }
+
+    private void makeContentPane() {
+        panel.removeAll();
         switch (teaPotCount){
-            case 0: System.err.println("No teapots in file");
-                    System.exit(1);
             case 1:
                 frame.setSize(300,300);
-                frame.setLayout(new GridLayout(1,1));
+                panel.setLayout(new GridLayout(1,1));
                 break;
             case 2:
                 frame.setSize(600,300);
-                frame.setLayout(new GridLayout(1,2));
+                panel.setLayout(new GridLayout(1,2));
+                break;
+            case 3:
+                frame.setSize(600,600);
+                panel.setLayout(new GridLayout(2,2));
+                break;
+            case 4:
+                frame.setSize(600,600);
+                panel.setLayout(new GridLayout(2,2));
                 break;
             default:
-                frame.setSize(600,600);
-                frame.setLayout(new GridLayout(2,2));
-                break;
+                System.err.println("No teapots in file");
+                System.exit(1);
         }
         for(int i =0; i < teaPotCount; i++){
-            frame.add(teaPots[i]);
+            panel.add(teaPots[i]);
         }
-        frame.setResizable(false);
-        frame.setVisible(true);
+        panel.repaint();
+        panel.revalidate();
     }
 
     private static int getNumberAfter(String string, String substring, int radix){

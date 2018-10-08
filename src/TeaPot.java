@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class TeaPot extends JPanel{
+public class TeaPot extends JPanel implements Runnable{
 
     private boolean power_on;       //bit 0
     private boolean system_enabled;   //bit 1
@@ -23,8 +23,17 @@ public class TeaPot extends JPanel{
     private int temperature;
     private int frameRate;
 
-    private boolean newObject;
+    private boolean notQuit;
+    private boolean onFire;
 
+
+    public boolean isNotQuit() {
+        return notQuit;
+    }
+
+    public void setNotQuit(boolean notQuit) {
+        this.notQuit = notQuit;
+    }
 
     private TeaPot(boolean power_on, boolean system_enabled, boolean water_enabled,
                    boolean heater_enabled, boolean device_ready, boolean coffee_pot_inserted,
@@ -48,22 +57,20 @@ public class TeaPot extends JPanel{
         this.waterVolume = waterVolume;
         this.temperature = temperature;
         this.frameRate = frameRate;
-        this.newObject = true;
-
-
-        Thread thread = new Thread(() -> {
-            while (true) {
-                try {
-                    repaint();
-                    Thread.sleep(1000 / this.frameRate);
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                    System.exit(1);
-                }
-            }
-        });
-        thread.start();
+        notQuit = true;
     }
+    public void run(){
+        while (notQuit) {
+            try {
+                repaint();
+                Thread.sleep(1000 / frameRate);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+                System.exit(1);
+            }
+        }
+    }
+
 
     TeaPot(TeaPot o){
         this(o.power_on,o.system_enabled,o.water_enabled,
@@ -75,7 +82,6 @@ public class TeaPot extends JPanel{
 
 
     TeaPot(){
-        this.newObject = true;
         //This empty default constructor is required by view, do NOT start a thread here.
     }
 

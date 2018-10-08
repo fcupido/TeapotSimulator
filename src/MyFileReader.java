@@ -27,7 +27,7 @@ public class MyFileReader {
         return count;
     }
 
-    String [] getFileContents()throws IOException {
+    String [] getFileContents()throws IOException, ArrayIndexOutOfBoundsException{
         reader = new BufferedReader(new FileReader(fileName));
         reader.mark(1000);
         String[] fileContents = new String[getLineCount()];

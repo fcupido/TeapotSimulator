@@ -55,7 +55,7 @@ class Model{
         return false;
     }
 
-    boolean checkForFileChange ()throws IOException{
+    boolean checkForFileChange ()throws IOException, ArrayIndexOutOfBoundsException{
         newValues = fileReader.getFileContents();
         boolean returnValue = isNewDifferentFromOld();
         oldValues = newValues;

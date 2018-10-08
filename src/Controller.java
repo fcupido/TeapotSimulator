@@ -76,7 +76,7 @@ public class Controller implements Runnable{
                 System.out.println("Exception at controller.run");
                 ex2.printStackTrace();
                 System.exit(1);
-            } catch (InterruptedException ignored){}
+            } catch (InterruptedException | ArrayIndexOutOfBoundsException ignored){}
         }
     }
 
