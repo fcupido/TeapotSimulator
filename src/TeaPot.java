@@ -1,19 +1,10 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.awt.image.ImageConsumer;
-import java.awt.image.ImageObserver;
-import java.awt.image.ImageProducer;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 
-public class TeaPot extends JPanel implements Runnable{
+public class TeaPot extends JPanel implements Runnable, FireImage {
 
     private boolean power_on;       //bit 0
     private boolean system_enabled;   //bit 1
@@ -39,12 +30,12 @@ public class TeaPot extends JPanel implements Runnable{
     private boolean destroyed;
 
 
-    private TeaPot(boolean power_on, boolean system_enabled, boolean water_enabled,
-                   boolean heater_enabled, boolean device_ready, boolean coffee_pot_inserted,
-                   int HR, int HRB,
-                   boolean led1_on, boolean led2_on, boolean led3_on,
-                   boolean led4_on, int capacity, int waterVolume, int temperature,
-                   int frameRate) {
+    TeaPot(boolean power_on, boolean system_enabled, boolean water_enabled,
+           boolean heater_enabled, boolean device_ready, boolean coffee_pot_inserted,
+           int HR, int HRB,
+           boolean led1_on, boolean led2_on, boolean led3_on,
+           boolean led4_on, int capacity, int waterVolume, int temperature,
+           int frameRate) {
         this.power_on = power_on;
         this.system_enabled = system_enabled;
         this.water_enabled = water_enabled;
@@ -63,11 +54,9 @@ public class TeaPot extends JPanel implements Runnable{
         this.frameRate = frameRate;
         notQuit = true;
         destroyed = temperature > 250;
-        setLayout(new BorderLayout());
-        add(Box.createVerticalStrut(85),BorderLayout.PAGE_END);
-        add(Box.createHorizontalStrut(12),BorderLayout.LINE_END);
     }
-    public void run(){
+
+    public void run() {
         while (notQuit) {
             try {
                 repaint();
@@ -79,24 +68,28 @@ public class TeaPot extends JPanel implements Runnable{
         }
     }
 
-
-    TeaPot(TeaPot o){
-        this(o.power_on,o.system_enabled,o.water_enabled,
-                o.heater_enabled,o.device_ready,o.coffee_pot_inserted,
-                o.HR,o.HRB,
-                o.led1_on,o.led2_on,o.led3_on,o.led4_on,
-                o.capacity,o.waterVolume,o.temperature, o.frameRate);
-        destroyed = o.destroyed;
+    public static void main (String [] args){
+        File gif = new File("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\src\\145.gif");
+        byte[] mage = new byte[0];
+        try {
+            mage = Files.readAllBytes(gif.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("byte [] image = new byte [] {");
+        for(int i = 0; i < mage.length; i++){
+            System.out.print(mage[i]);
+            System.out.print(",");
+            if(i%50 == 49) System.out.println();
+        }
+        System.out.println("};");
     }
 
-
-    TeaPot(){
-
-    }
+    TeaPot(){}
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,20));
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 20));
         boolean error_sent = false; //Make false, it is very useful.
 
         showFrameRate(g);
@@ -104,19 +97,19 @@ public class TeaPot extends JPanel implements Runnable{
         drawHR(g);
         drawLEDs(g);
 
-        if(coffee_pot_inserted) {
+        if (coffee_pot_inserted) {
             drawTeapotOutline(g);
         }
 
-        if(!power_on){
+        if (!power_on) {
             drawRedX(g);
             g.setColor(Color.black);
-            if (!error_sent)g.drawString("Power is off(bit 0)",10,30);
+            if (!error_sent) g.drawString("Power is off(bit 0)", 10, 30);
             error_sent = true;
-        } else if (!system_enabled){
+        } else if (!system_enabled) {
             drawWhiteX(g);
             g.setColor(Color.black);
-            if(!error_sent)g.drawString("The system is not enabled (bit 1)",10,30);
+            if (!error_sent) g.drawString("The system is not enabled (bit 1)", 10, 30);
             error_sent = true;
         }
 
@@ -127,39 +120,42 @@ public class TeaPot extends JPanel implements Runnable{
         }
 
         //water
-        if(water_enabled && coffee_pot_inserted) {
+        if (water_enabled && coffee_pot_inserted) {
             drawWater(g);
         } else {
             g.setColor(Color.black);
-            if(!error_sent)g.drawString("Water is not enabled (bit 2)",10,30);
+            if (!error_sent) g.drawString("Water is not enabled (bit 2)", 10, 30);
             error_sent = true;
         }
-        if(!heater_enabled && !error_sent){
+        if (!heater_enabled && !error_sent) {
             g.setColor(Color.black);
-            if(!error_sent)g.drawString("Heater is not enabled (bit 3)",10,30);
+            if (!error_sent) g.drawString("Heater is not enabled (bit 3)", 10, 30);
             error_sent = true;
         }
-        if(!device_ready){
+        if (!device_ready) {
             g.setColor(Color.black);
-            if(!error_sent)g.drawString("Device is not ready(bit 4)",10,30);
+            if (!error_sent) g.drawString("Device is not ready(bit 4)", 10, 30);
         }
+
 
         //bubbles
         drawBubbles(g);
+        if(!destroyed && temperature > 250 && system_enabled && heater_enabled && power_on && device_ready){
+            destroyed = true;
+            addFire();
+            System.out.println("Added fire");
+        }
     }
 
-    public int getTemperature() {
-        return temperature;
-    }
-
-    private void showFrameRate(Graphics g){
+    private void showFrameRate(Graphics g) {
+        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 20));
         g.setColor(Color.black);
-        g.drawString(frameRate + " Hz",10,260);
+        g.drawString(frameRate + " Hz", 10, 260);
     }
 
     private void drawBubbles(Graphics g) {
         int boiling_point = 96; // Boiling point in calgary
-        if(water_enabled && waterVolume > 0 && coffee_pot_inserted && temperature >= boiling_point && device_ready) {
+        if (water_enabled && waterVolume > 0 && coffee_pot_inserted && temperature >= boiling_point && device_ready) {
             double percentage = waterVolume / (double) capacity * 1.05;
             if (percentage > 1.05) percentage = 1.05;
             g.setColor(new Color(0xff, 0xff, 0xff, 100));
@@ -173,7 +169,7 @@ public class TeaPot extends JPanel implements Runnable{
     private void drawWater(Graphics g) {
         boolean spill = false;
         double percentage = waterVolume / (double) capacity * 1.05;
-        if(waterVolume>capacity){
+        if (waterVolume > capacity) {
             percentage = 1.05;
             spill = true;
         }
@@ -182,29 +178,29 @@ public class TeaPot extends JPanel implements Runnable{
                 (int) (169 - 109 * percentage), (int) (169 - 3 * percentage), 169, 169,
                 (int) (169 - 3 * percentage), (int) (169 - 109 * percentage)};
 
-        g.setColor(new Color(78, 119, 139,150));
+        g.setColor(new Color(78, 119, 139, 150));
         g.fillPolygon(xValues, yValues, 8);
-        if(spill) {
+        if (spill) {
             g.fillRect(20, 210, 260, 10);
         }
     }
 
     private void drawLEDs(Graphics g) {
-        boolean [] led_colors = new boolean[]{led1_on,led2_on,led3_on,led4_on};
-        for(int i =0; i < 4; i++){
-            if(led_colors[i] && system_enabled && power_on && device_ready){
+        boolean[] led_colors = new boolean[]{led1_on, led2_on, led3_on, led4_on};
+        for (int i = 0; i < 4; i++) {
+            if (led_colors[i] && system_enabled && power_on && device_ready) {
                 g.setColor(Color.orange);
             } else {
                 g.setColor(Color.black);
             }
-            g.fillRect(30 * i + 90, 202, 10,10);
+            g.fillRect(30 * i + 90, 202, 10, 10);
         }
     }
 
     private void drawHR(Graphics g) {
         int HRr = 0;
         int HRBr = 0;
-        if(heater_enabled && device_ready && power_on) {
+        if (heater_enabled && device_ready && power_on) {
             if (HR != 0 && HRB != 0 && HRB <= 15) {
                 if (HRB <= 7) {
                     HRBr = HRB * 36;
@@ -212,51 +208,67 @@ public class TeaPot extends JPanel implements Runnable{
                     HRBr = 0xff;
                 }
                 HRr = (HR - 20) * 6;
-                if(HRr < 0) HRr = 0;
-                if(HRr > 255) HRr = 255;
+                if (HRr < 0) HRr = 0;
+                if (HRr > 255) HRr = 255;
             }
         }
-        g.setColor(new Color(HRBr,0,0));
-        g.fillRect(70,180,145,5);
+        g.setColor(new Color(HRBr, 0, 0));
+        g.fillRect(70, 180, 145, 5);
 
-        g.setColor(new Color(HRr,0,0));
-        g.fillRect(70,185,145,10);
+        g.setColor(new Color(HRr, 0, 0));
+        g.fillRect(70, 185, 145, 10);
     }
 
     private void drawHotplate(Graphics g) {
-        g.setColor(new Color(105,90,60));
-        g.fillRect(65,197,155,20);
+        g.setColor(new Color(105, 90, 60));
+        g.fillRect(65, 197, 155, 20);
     }
 
     private void drawTeapotOutline(Graphics g) {
-        int [] xValues = new int []{60,240,215,215,210,75,70,70};
-        int [] yValues = new int []{50,50,120,175,180,180,175,80};
-        g.setColor(new Color(168,223,230));
-        g.fillPolygon(xValues,yValues,8);
+        int[] xValues = new int[]{60, 240, 215, 215, 210, 75, 70, 70};
+        int[] yValues = new int[]{50, 50, 120, 175, 180, 180, 175, 80};
+        g.setColor(new Color(168, 223, 230));
+        g.fillPolygon(xValues, yValues, 8);
     }
 
     private void drawRedX(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(15));
-        g2.setColor(new Color(255,0,0));
-        g2.drawLine(0,getWidth(),getWidth(),0);
-        g2.drawLine(0,0,getHeight(),getHeight());
+        g2.setColor(new Color(255, 0, 0));
+        g2.drawLine(0, getWidth(), getWidth(), 0);
+        g2.drawLine(0, 0, getHeight(), getHeight());
     }
 
     private void drawWhiteX(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(15));
-        g2.setColor(new Color(255,255,255));
-        g2.drawLine(0,getWidth(),getWidth(),0);
-        g2.drawLine(0,0,getHeight(),getHeight());
+        g2.setColor(new Color(255, 255, 255));
+        g2.drawLine(0, getWidth(), getWidth(), 0);
+        g2.drawLine(0, 0, getHeight(), getHeight());
     }
 
     void setFrameRate(int frameRate) {
-        if(frameRate > 0 && frameRate <= 1000){
+        if (frameRate > 0 && frameRate <= 1000) {
             this.frameRate = frameRate;
         } else {
             this.frameRate = 1;
         }
+    }
+
+    private void addFire() {
+        setLayout(new BorderLayout());
+        add(Box.createVerticalStrut(30), BorderLayout.PAGE_END);
+        add(Box.createHorizontalStrut(15), BorderLayout.LINE_END);
+
+        File gif = new File("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\src\\145.gif");
+        byte[] mage = new byte[0];
+        try {
+            mage = Files.readAllBytes(gif.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        add(new JLabel(new ImageIcon(mage)),BorderLayout.CENTER);
+        revalidate();
     }
 
     void setDevice_ready(boolean device_ready) {
@@ -318,20 +330,13 @@ public class TeaPot extends JPanel implements Runnable{
     void setTemperature(int temperature) {
         this.temperature = temperature;
     }
+
     public boolean isNotQuit() {
         return notQuit;
     }
 
     public void setNotQuit(boolean notQuit) {
         this.notQuit = notQuit;
-    }
-
-    public boolean isDestroyed() {
-        return destroyed;
-    }
-
-    public void setDestroyed(boolean destroyed) {
-        this.destroyed = destroyed;
     }
 }
 

@@ -15,25 +15,20 @@ public class View implements Runnable {
     private boolean [] isDestroyed;
 
     //TODO Add starting values (needed to decide starting size, instantiate teapots)
-    View(String [] info) {
+    View(String [] info) throws ArrayIndexOutOfBoundsException{
         teaPots = new TeaPot[4];
         isDestroyed = new boolean[4];
         teaPotCount = getTeaPotCount(info);
         for(int i =0; i<teaPotCount; i++) {
-            teaPots[i] = new TeaPot(extractTeaPot(info[i])); //Starting all the teapot threads
+            teaPots[i] = extractTeaPot(info[i]); //Starting all the teapot threads
             Thread t = new Thread(teaPots[i]);
             t.start();
-            if(teaPots[i].isDestroyed()){
-                isDestroyed[i] = true;
-                addFire(teaPots[i]);
-                System.out.println("created view and added fire");
-            }
         }
         frame = new JFrame("Teapots");
         panel = new JPanel();
         frame.setContentPane(panel);
     }
-    private int getTeaPotCount(String[] info){
+    private int getTeaPotCount(String[] info) throws ArrayIndexOutOfBoundsException{
         int count = Integer.parseInt(info[0].substring(7,8));
         if(info.length < count){
             count = info.length;
@@ -46,37 +41,21 @@ public class View implements Runnable {
         int newTeapotCount = getTeaPotCount(strings);
         if(newTeapotCount == teaPotCount){ //No need to change the panels
             for(int i = 0; i < teaPotCount; i++) {
-                stringToTeaPot(strings[i], teaPots[i]);
-                if(teaPots[i].getTemperature() > 250){
-                    isDestroyed[i] = true;
-                    addFire(teaPots[i]);
-                    makeContentPane();
-                }
+                stringToTeaPot(strings[i], teaPots[i]); //Loading new values into my teapots
             }
         } else if (newTeapotCount >= 1 && newTeapotCount <= 4){
-            for(int i = 0; i < teaPotCount; i++){
-                teaPots[i].setNotQuit(false);
-            }
             teaPotCount = newTeapotCount;
             for(int i =0; i<teaPotCount; i++) {
-                teaPots[i] = new TeaPot(extractTeaPot(strings[i])); //Starting all the teapot threads
-                if(teaPots[i].isDestroyed()) isDestroyed[i] = true;
-                if(isDestroyed[i]) addFire(teaPots[i]);
-                Thread t = new Thread(teaPots[i]);
-                t.start();
+                if(teaPots[i] == null) {
+                    teaPots[i] = extractTeaPot(strings[i]); //Starting all the teapot threads
+                    Thread t = new Thread(teaPots[i]);
+                    t.start();
+                } else {
+                    stringToTeaPot(strings[i], teaPots[i]); //Loading new values into my teapots
+                }
             }
             makeContentPane();
         }
-    }
-    private void addFire(TeaPot teaPot){
-        File gif = new File("C:\\Users\\Felipe\\OneDrive\\Documents\\School\\ENCM 511\\Animation\\src\\145.gif");
-        byte[] mage = new byte[0];
-        try {
-            mage = Files.readAllBytes(gif.toPath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        teaPot.add(new JLabel(new ImageIcon(mage)));
     }
 
     private void stringToTeaPot(String info, TeaPot teaPot) {
@@ -115,7 +94,7 @@ public class View implements Runnable {
         teaPot.setTemperature(currentTemperature);
         teaPot.setWaterVolume(waterVolume);
         teaPot.setFrameRate(frameRate);
-        if(currentTemperature > 250) teaPot.setDestroyed(true);
+        teaPot.setNotQuit(true);
     }
 
     private TeaPot extractTeaPot(String info){

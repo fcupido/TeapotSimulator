@@ -15,9 +15,14 @@ public class Controller implements Runnable{
      * @param filepath The filepath where the file to be interpreted is.
      */
     private Controller(String filepath){
-        model = new Model(filepath);
-        view = new View(model.getOldValues());
-        notQuit = true;
+        try {
+            model = new Model(filepath);
+            view = new View(model.getOldValues());
+            notQuit = true;
+        } catch (ArrayIndexOutOfBoundsException ex){
+            System.err.println("Not enough Teapots: Make sure the file at:\n "+filepath+"\n is not empty.");
+            System.exit(1);
+        }
     }
 
     public static void main (String [] args){
@@ -47,7 +52,8 @@ public class Controller implements Runnable{
             if(temp.exists()){
                 args = new String[]{"C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote_SCADAtransmission.info"};
             } else {
-                System.err.println("Error: Not enough arguments. Usage:");
+                System.err.println("No file found at: C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote_SCADAtransmission.info and no arguments provided");
+                System.err.println("Usage:");
                 System.err.println("java -jar Animation.jar <file path>");
                 System.err.println("Example: java -jar Animation.jar \"C:\\Users\\your_user\\Documents\\School\\ENCM 511\\textfile.txt\"");
                 System.err.println("You could also place the file at C:\\__CCES\\SCADA_TRANSMISSIONS\\coffeepot_remote_SCADAtransmission.info");
