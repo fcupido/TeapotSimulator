@@ -7,7 +7,7 @@ public class Controller implements Runnable{
     private Model model;
     private View view;
     private boolean notQuit;
-    private final int waitTimeMillis = 50;
+    private final int waitTimeMillis = 1000;
 
     /**
      * Constructor that initializes the model and view.
@@ -15,14 +15,11 @@ public class Controller implements Runnable{
      * @param filepath The filepath where the file to be interpreted is.
      */
     private Controller(String filepath){
-        try {
-            model = new Model(filepath);
-            view = new View(model.getOldValues());
-            notQuit = true;
-        } catch (ArrayIndexOutOfBoundsException ex){
-            System.err.println("Not enough Teapots: Make sure the file at:\n "+filepath+"\n is not empty.");
-            System.exit(1);
-        }
+
+        model = new Model(filepath);
+        view = new View(model.getOldValues());
+        notQuit = true;
+
     }
 
     public static void main (String [] args){
@@ -87,7 +84,11 @@ public class Controller implements Runnable{
     }
 
     private void loadChangesToView(){
-        view.update(model.getNewValues());
+        try {
+            view.update(model.getNewValues());
+        } catch (NumberFormatException e){System.out.println("Ignoring: NumberFormatException, " +
+                "please check file format.");
+        }
     }
 
     void quit (){
